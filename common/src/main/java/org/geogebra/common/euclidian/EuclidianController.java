@@ -19,8 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geogebra.common.awt.GPoint;
@@ -169,6 +167,8 @@ import org.geogebra.common.util.GPredicate;
 import org.geogebra.common.util.MyMath;
 import org.geogebra.common.util.StringUtil;
 
+import com.google.j2objc.annotations.Weak;
+
 public abstract class EuclidianController implements SpecialPointsListener {
 
 	/**
@@ -232,7 +232,9 @@ public abstract class EuclidianController implements SpecialPointsListener {
 	 * attachDetach (while the point is attached to a Path or Region)
 	 */
 	private static final int INCREASED_THRESHOLD_FACTOR = 2;
+	@Weak
 	protected final App app;
+	@Weak
 	protected final SelectionManager selection;
 	protected final Localization localization;
 	public double xRW;
@@ -240,8 +242,10 @@ public abstract class EuclidianController implements SpecialPointsListener {
 	public GeoPointND movedGeoPoint;
 	protected GeoElement resultedGeo;
 	public boolean draggingBeyondThreshold = false;
+	@Weak
 	protected Kernel kernel;
 	public GPoint mouseLoc;
+	@Weak
 	private EuclidianView view;
 	protected EuclidianPen pen;
 	private double oldDistance;
@@ -11859,25 +11863,19 @@ public abstract class EuclidianController implements SpecialPointsListener {
 		if (selGeos() == 0) {
 			Hits curves = hits.getHits(TestGeo.GEOCURVECARTESIANND, tempArrayList);
 			count = addSelectedGeo(curves, 1, false, selPreview);
-			if(count==1) {
-				logger.log(Level.SEVERE, "Found a geo");
-			}
 		}
 
 		if (count == 0) {
 			addSelectedPoint(hits, 1, false, selPreview);
-			logger.log(Level.SEVERE, "Found a point");
 		}
 
 		if (selGeos() == 2 && selPoints() == 1) {
-			logger.log(Level.SEVERE, "Found point and geo");
 			GeoElement[] elements = getSelectedGeos();
 			GeoPointND[] points = getSelectedPointsND();
 
 			try {
 				GeoCurveCartesian3D curve3D = (GeoCurveCartesian3D) elements[0];
 				GeoNumeric tau = companion.torsion(points[0], curve3D);
-				logger.log(Level.SEVERE, "Converted geo to curve 3D");
 				return new GeoElement[]{getTextDispatcher().createTorsionText(points[0], curve3D, points[0], tau)};
 			} catch (Exception ex) {
 				ex.printStackTrace();
